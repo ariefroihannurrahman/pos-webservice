@@ -8,8 +8,8 @@ app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.listen(3000, () => {
-    console.log("Server running in port : 3000");
+app.listen(5000, () => {
+    console.log("Server running in port : 5000");
 });
 
 var conn = mysql.createConnection({
@@ -25,7 +25,7 @@ app.use(session({
     saveUninitialized: true,
     loggedin: false,
     laporan_awal:null,
-    id_session: null
+    sessionid: null
   }));
   
   
@@ -40,42 +40,67 @@ app.use(session({
 //===================== /SETTING ============================//
 //===========================================================//
 
+  app.post('/pokemon', (req,res) => {
+    upload(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(408).json(err);
+        } else if (err) {
+            return res.status(500).json(err);
+        }
+        pool.query("insert into app.pokemon (nama,deskripsi,path) values($1,$2,$3)",[
+            req.body.nama,
+            req.body.deskripsi,
+            req.file.path.replace(/^\/?[^\/]+/, "")
+        ],(err,result)=>{
+            if(err){
+                return res.status(500).json(err);
+            }
+            pool.query("select * from app.pokemon",(err,result)=>{
+                if(err){
+                    return res.status(500).json(err);
+                }
+                return res.status(200).json(result.rows);
+            })
+        });
+
+    })
+});
+app.get('/pokemon',(req,res)=>{
+    pool.query("select * from app.pokemon",(err,result)=>{
+        if(err){
+            return res.status(500).json(err);
+        }
+        return res.status(200).json(result.rows);
+    })
+})
+
+app.get('/', function (req, res) {
+    res.json({message: 'WELCOME'});
+});
+
+
 app.get('/',(req,res)=>{
-    if(req.session.loggedin == true){
-      res.redirect('/kasir');
-    }else{
-      res.render('login.ejs');
+  res.json({token: req.session.loggedin});
+});
+
+app.post('/auth', function(req,res) {
+  let kode = req.body.kode_kasir;
+  conn.query('SELECT * FROM karyawan WHERE kode = ?', [kode], function(error, results, fields) {
+    if(results.length > 0){
+      req.session.sessionid = year1+""+month1+""+date1+""+results[0].no_karyawan;
+      res.json({
+        token : req.session.loggedin = true,
+        datakasir : req.session.dataKasir = results[0],
+        sessionid : req.session.sessionid
+      })
     }
   });
+});
   
-  app.post('/auth', function(req,res) {
-    let kode = req.body.kode_kasir;
-    conn.query('SELECT * FROM karyawan WHERE kode = ?', [kode], function(error, results, fields) {
-      if (error) throw error;
-        if (results.length > 0) {
-            req.session.loggedin = true;
-            req.session.dataKasir = results[0];
-            req.session.id_session = year1+""+month1+""+date1+""+results[0].no_karyawan;
-            res.redirect('/laporan-awal');
-        } else {
-          res.send('Kode Salah!');
-        }			
-        res.end();
-      });
-  });
-  
-  //===========================================================//
-  //===================== /LOGIN AUTH ============================//
-  //===========================================================//
-  
-  app.get('/laporan-awal', (req,res) => {
-    res.render('kasir/laporan-awal.ejs',{
-      dataKasir: req.session.dataKasir,
-      dataSession : req.session.id_session
-    });
-  });
-  
-  app.post('/add-laporan-awal',(req, res) => {
+
+
+
+app.post('/add-laporan-awal',(req, res) => {
     let data = {
       no_laporan : req.session.id_session,
       no_karyawan : req.session.dataKasir.no_karyawan,
@@ -85,42 +110,25 @@ app.get('/',(req,res)=>{
     session.laporan_awal = req.body.laporan_awal;
     let sql = "INSERT INTO laporankasir SET ?";
     let query = conn.query(sql, data,(err, results) => {
-      if(err) throw err;
-      res.redirect('/kasir');
+      res.json({laporanawal: session.laporan_awal});
     });
-  });
-  
-  app.get('/laporan-akhir', (req,res) => {
-    res.render('kasir/laporan-akhir.ejs',{
-      lap_awal: session.laporan_awal,
-    });
-  });
-  
-  app.post('/add-laporan-akhir',(req, res) => {
+});
+
+app.post('/add-laporan-akhir',(req, res) => {
     let sql = "UPDATE laporankasir SET laporan_akhir ='"+req.body.laporan_akhir+"' WHERE no_laporan="+req.session.id_session+";"
-    
     let query = conn.query(sql,(err, results) => {
       if(err) throw err;
       req.session.loggedin = false;
       req.session.dataKasir = null;
       req.session.id_session = null;
-      res.redirect('/');
     });
-  });
-  
-  
-  //===========================================================//
-  //===================== /Laporan Laci ============================//
-  //===========================================================//
-  
-  
-  app.get('/kasir', (req,res) => {
+});
+
+app.get('/kasir', (req,res) => {
     var query = 'SELECT produk.kd_produk, produk.nama_produk, jenis.nama_jenis, kategori.nama_kategori, produk.harga from produk INNER JOIN jenis ON produk.no_jenis = jenis.no_jenis INNER JOIN kategori ON produk.no_kategori = kategori.no_kategori;';
     conn.query(query, function(err, data1){
           if(err) throw err;
-      res.render('kasir/home-kasir.ejs',{
-        listProduk1: data1,
-      });
+      res.json({listProduk1: session.data1});
       }); 
   });
   
@@ -184,46 +192,18 @@ app.get('/',(req,res)=>{
     });
   });
   
+  // app.get('/laporan-awal', (req,res) => {
+  //   res.render('kasir/laporan-awal.ejs',{
+  //     dataKasir: req.session.dataKasir,
+  //     dataSession : req.session.id_session
+  //   });
+  // });
   
-  //===========================================================//
-  //===================== /KASIR UTAMA ============================//
-  //===========================================================//
-
-
-  app.post('/pokemon', (req,res) => {
-    upload(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-            return res.status(408).json(err);
-        } else if (err) {
-            return res.status(500).json(err);
-        }
-        pool.query("insert into app.pokemon (nama,deskripsi,path) values($1,$2,$3)",[
-            req.body.nama,
-            req.body.deskripsi,
-            req.file.path.replace(/^\/?[^\/]+/, "")
-        ],(err,result)=>{
-            if(err){
-                return res.status(500).json(err);
-            }
-            pool.query("select * from app.pokemon",(err,result)=>{
-                if(err){
-                    return res.status(500).json(err);
-                }
-                return res.status(200).json(result.rows);
-            })
-        });
-
-    })
-});
-app.get('/pokemon',(req,res)=>{
-    pool.query("select * from app.pokemon",(err,result)=>{
-        if(err){
-            return res.status(500).json(err);
-        }
-        return res.status(200).json(result.rows);
-    })
-})
-
-app.get('/', function (req, res) {
-    res.json({message: 'WELCOME'});
-});
+  // app.get('/laporan-akhir', (req,res) => {
+  //   res.render('kasir/laporan-akhir.ejs',{
+  //     lap_awal: session.laporan_awal,
+  //   });
+  // });
+  
+  
+  
