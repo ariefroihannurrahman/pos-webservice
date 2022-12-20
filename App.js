@@ -1,17 +1,19 @@
 const express = require('express');
 const app = express();
 const mysql = require('mysql');
+const cors = require('cors');
 // const session = require('express-session');
 // const async = require('async');
 const { default: axios } = require('axios');
-
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.listen(5000, () => {
-    console.log("Server running in port : 5000");
-});
+let corsOptions = {
+  origin : ['http://localhost:3000/'],
+} 
+
+app.use(cors(corsOptions));
 
 var conn = mysql.createConnection({
     host: "localhost",
@@ -206,9 +208,8 @@ var conn = mysql.createConnection({
   //   });
   // });
   
-  
-  
 app.get('/API/jenis', (req, res)=>{
+  res.set('Access-Control-Allow-Origin', '*');
   conn.query('select * from jenis', (error, result)=>{
     if(error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
@@ -217,6 +218,7 @@ app.get('/API/jenis', (req, res)=>{
 });
 
 app.get('/API/kategori', (req, res)=>{
+  res.set('Access-Control-Allow-Origin', '*');
   conn.query('select * from kategori', (error, result)=>{
     if(error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
@@ -225,6 +227,7 @@ app.get('/API/kategori', (req, res)=>{
 });
 
 app.get('/API/karyawan', (req, res)=>{
+  res.set('Access-Control-Allow-Origin', '*');
   conn.query('select * from karyawan', (error, result)=>{
     if(error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
@@ -233,6 +236,7 @@ app.get('/API/karyawan', (req, res)=>{
 });
 
 app.get('/API/produk', (req, res)=>{
+  res.set('Access-Control-Allow-Origin', '*');
   conn.query('select * from produk', (error, result)=>{
     if(error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
@@ -241,9 +245,14 @@ app.get('/API/produk', (req, res)=>{
 });
 
 app.get('/API/penjualan', (req, res)=>{
+  res.set('Access-Control-Allow-Origin', '*');
   conn.query('select * from penjualan', (error, result)=>{
     if(error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
+});
+
+app.listen(5000, () => {
+  console.log("Server running in port : 5000");
 });
