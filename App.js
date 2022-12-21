@@ -10,16 +10,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 let corsOptions = {
-  origin : ['http://localhost:3000/'],
-} 
+  origin: ['http://localhost:3000/'],
+}
 
 app.use(cors(corsOptions));
 
 var conn = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "pos"
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "pos"
 });
 
 // app.use(session({
@@ -30,224 +30,241 @@ var conn = mysql.createConnection({
 //     laporan_awal:null,
 //     sessionid: null
 //   }));
-  
-  
-//   let date_time = new Date();
-//   let date1 = ("0" + date_time.getDate()).slice(-2);
-//   let month1 = ("0" + (date_time.getMonth() + 1)).slice(-2);
-//   let year1 = date_time.getFullYear();
-//   let tanggal = year1 + "-" + month1 + "-" + date1;
-//   let tanggal2 =year1+month1+date1;
-
-//   //===========================================================//
-// //===================== /SETTING ============================//
-// //===========================================================//
-
-//   app.post('/pokemon', (req,res) => {
-//     upload(req, res, (err) => {
-//         if (err instanceof multer.MulterError) {
-//             return res.status(408).json(err);
-//         } else if (err) {
-//             return res.status(500).json(err);
-//         }
-//         pool.query("insert into app.pokemon (nama,deskripsi,path) values($1,$2,$3)",[
-//             req.body.nama,
-//             req.body.deskripsi,
-//             req.file.path.replace(/^\/?[^\/]+/, "")
-//         ],(err,result)=>{
-//             if(err){
-//                 return res.status(500).json(err);
-//             }
-//             pool.query("select * from app.pokemon",(err,result)=>{
-//                 if(err){
-//                     return res.status(500).json(err);
-//                 }
-//                 return res.status(200).json(result.rows);
-//             })
-//         });
-
-//     })
-// });
-// app.get('/pokemon',(req,res)=>{
-//     pool.query("select * from app.pokemon",(err,result)=>{
-//         if(err){
-//             return res.status(500).json(err);
-//         }
-//         return res.status(200).json(result.rows);
-//     })
-// })
-
-// app.get('/', function (req, res) {
-//     res.json({message: 'WELCOME'});
-// });
 
 
-// app.get('/',(req,res)=>{
-//   res.json({token: req.session.loggedin});
-// });
+let date_time = new Date();
+let date1 = ("0" + date_time.getDate()).slice(-2);
+let month1 = ("0" + (date_time.getMonth() + 1)).slice(-2);
+let year1 = date_time.getFullYear();
+let tanggal = year1 + "-" + month1 + "-" + date1;
+let tanggal2 = year1 + month1 + date1;
 
-// app.post('/auth', function(req,res) {
-//   let kode = req.body.kode_kasir;
-//   conn.query('SELECT * FROM karyawan WHERE kode = ?', [kode], function(error, results, fields) {
-//     if(results.length > 0){
-//       req.session.sessionid = year1+""+month1+""+date1+""+results[0].no_karyawan;
-//       res.json({
-//         token : req.session.loggedin = true,
-//         datakasir : req.session.dataKasir = results[0],
-//         sessionid : req.session.sessionid
-//       })
-//     }
-//   });
-// });
-  
+app.post('/auth', function (req, res) {
+  let kode = req.body.kode;
+  console.log(kode);
+  conn.query('SELECT * FROM karyawan WHERE kode = ?', [kode], function (error, results, fields) {
+    if (results.length > 0) {
+      let sessionid = tahun + "" + month1 + "" + date1 + "" + menit + "" + results[0].no_karyawan;
+      res.send({
+        namakasir: results[0].nama_karyawan,
+        idkasir: results[0].no_karyawan,
+        sessionid: sessionid
+      })
+    }
+  });
+});
+
+app.post('/add-laporan-awal', (req, res) => {
+  let data = {
+    no_laporan: req.body.id_session,
+    no_karyawan: req.body.no_karyawan,
+    tanggal_laporan: tanggal,
+    laporan_awal: req.body.laporan_awal
+  };
+  console.log(req.body.id_session);
+  console.log(req.body.no_karyawan);
+  console.log(req.body.tanggal);
+  console.log(req.body.laporan_awal);
+  let laporan_awal = req.body.laporan_awal;
+  let sql = "INSERT INTO laporankasir SET ?";
+  let query = conn.query(sql, data, (err, results) => {
+    res.json({ laporanawal: laporan_awal });
+  });
+});
+
+app.post('/add-laporan-akhir', (req, res) => {
+  let sql = "UPDATE laporankasir SET laporan_akhir ='" + req.body.laporan_akhir + "' WHERE no_laporan=" + req.body.id_session + ";"
+  let query = conn.query(sql, (err, results) => {
+    if (err) throw err;
+    res.json({ message: "sukses" });
+  });
+});
 
 
 
-// app.post('/add-laporan-awal',(req, res) => {
-//     let data = {
-//       no_laporan : req.session.id_session,
-//       no_karyawan : req.session.dataKasir.no_karyawan,
-//       tanggal_laporan : tanggal,
-//       laporan_awal : req.body.laporan_awal
-//     };
-//     session.laporan_awal = req.body.laporan_awal;
-//     let sql = "INSERT INTO laporankasir SET ?";
-//     let query = conn.query(sql, data,(err, results) => {
-//       res.json({laporanawal: session.laporan_awal});
-//     });
-// });
+app.post("/get-produk-kode", function (request, response, next) {
+  var kode = request.body.kode;
+  var query = `SELECT * FROM produk WHERE kd_produk = "${kode}"`;
+  conn.query(query, function (error, data) {
+    response.json(data[0]);
+  });
+});
 
-// app.post('/add-laporan-akhir',(req, res) => {
-//     let sql = "UPDATE laporankasir SET laporan_akhir ='"+req.body.laporan_akhir+"' WHERE no_laporan="+req.session.id_session+";"
-//     let query = conn.query(sql,(err, results) => {
-//       if(err) throw err;
-//       req.session.loggedin = false;
-//       req.session.dataKasir = null;
-//       req.session.id_session = null;
-//     });
-// });
+app.post("/save-item", function (request, response, next) {
+  var idt = request.body.id_transaksi;
+  var idp = request.body.id_produk;
+  var kuantitas = request.body.kuantitas;
+  var subtotal = request.body.subTotal;
 
-// app.get('/kasir', (req,res) => {
-//     var query = 'SELECT produk.kd_produk, produk.nama_produk, jenis.nama_jenis, kategori.nama_kategori, produk.harga from produk INNER JOIN jenis ON produk.no_jenis = jenis.no_jenis INNER JOIN kategori ON produk.no_kategori = kategori.no_kategori;';
-//     conn.query(query, function(err, data1){
-//           if(err) throw err;
-//       res.json({listProduk1: session.data1});
-//       }); 
-//   });
-  
-//   app.post("/get-produk-kode", function(request, response, next){
-//       var kode = request.body.kode;
-//       var query = `SELECT * FROM produk WHERE kd_produk = "${kode}"`;
-//       conn.query(query, function(error, data){
-//           response.json(data[0]);
-//       });
-//   });
-  
-//   app.post("/save-item", function(request, response, next){
-//       var idt = request.body.id_transaksi;
-//       var idp = request.body.id_produk;
-//       var kuantitas = request.body.kuantitas;
-//       var subtotal = request.body.subtotal;
-  
-//       var query = `INSERT INTO detailtransaksi (no_detail, no_transaksi, no_produk, kuantitas, subtotal) VALUES ("", "${idt}", "${idp}", "${kuantitas}", "${subtotal}")`;
-//       conn.query(query, function(error, data){
-//           console.log("Sukses Detail Transaksi");
-          
-//       });
-//   });
-  
-//   app.post("/get-item-list", function(request, response, next){
-//       var idt = request.body.id_transaksi;
-//       var query = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
-//       conn.query(query, function(error, data){
-//           response.json(data);
-//       });
-//   });
-  
-//   app.post("/save-penjualan", function(request, response, next){
-//       var idp = request.body.id_penjualan;
-//       var idk = request.body.id_karyawan;
-//       var tp = request.body.tanggal_penjualan;
-//       var total = request.body.total_transaksi;
-//       var bayar = request.body.bayar;
-  
-//     console.log(idp);
-//     console.log(idk);
-//     console.log(tp);
-//     console.log(total);
-//     console.log(bayar);
-  
-//       var query = `INSERT INTO transaksi (no_transaksi, no_karyawan, tanggal_penjualan, total_transaksi, bayar) VALUES ("${idp}", "${idk}", "${tp}", "${total}", "${bayar}")`;
-//       conn.query(query, function(error, data){
-//           console.log("Sukses Transaksi");
-//       });
-  
-//     response.redirect('/kasir');
-//   });
-  
-//   app.post('/delete-item/', (req,res)=>{
-//     let id = req.body.id;
-//     console.log(id);
-//     let sql = "DELETE FROM detailtransaksi WHERE no_detail="+id+"";
-//     let query = conn.query(sql,(err, results) => {
-//       if(err) throw err;
-      
-//     });
-//   });
-  
-  // app.get('/laporan-awal', (req,res) => {
-  //   res.render('kasir/laporan-awal.ejs',{
-  //     dataKasir: req.session.dataKasir,
-  //     dataSession : req.session.id_session
-  //   });
-  // });
-  
-  // app.get('/laporan-akhir', (req,res) => {
-  //   res.render('kasir/laporan-akhir.ejs',{
-  //     lap_awal: session.laporan_awal,
-  //   });
-  // });
-  
-app.get('/API/jenis', (req, res)=>{
+  console.log(idt);
+  console.log(idp);
+  console.log(kuantitas);
+  console.log(subtotal);
+
+  var query = `INSERT INTO detailtransaksi (no_detail, no_transaksi, no_produk, kuantitas, subtotal) VALUES ("", "${idt}", "${idp}", "${kuantitas}", "${subtotal}")`;
+  conn.query(query, function (error, data1) {
+    response.send(data1);
+
+  });
+});
+
+app.post("/get-item-list", function (request, response, next) {
+  var idt = request.body.id_transaksi;
+  console.log(idt);
+  var query = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
+  conn.query(query, function (error, data2) {
+    response.send(data2);
+  });
+});
+
+app.post("/get-save-item", function (request, response, next) {
+  var idt = request.body.id_transaksi;
+  var idp = request.body.id_produk;
+  var kuantitas = request.body.kuantitas;
+  var subtotal = request.body.subTotal;
+
+  console.log(idt);
+  console.log(idp);
+  console.log(kuantitas);
+  console.log(subtotal);
+
+  async.parallel([
+    function (callback) {
+      let sql = `INSERT INTO detailtransaksi (no_detail, no_transaksi, no_produk, kuantitas, subtotal) VALUES ("", "${idt}", "${idp}", "${kuantitas}", "${subtotal}")`;
+      let query = conn.query(sql, (err, results1) => {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, results1);
+      });
+    }, function (callback) {
+      let sql = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
+      let query = conn.query(sql, (err, results2) => {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, results2);
+      });
+    }
+  ], function (error, callbackResults) {
+    if (error) {
+      console.log(error);
+    } else {
+      response.send({
+        listItem: callbackResults[1]
+      })
+    }
+  });
+});
+
+app.post("/get-delete-item", function (request, response, next) {
+  var idt = request.body.id_transaksi;
+  var id = request.body.no_detail;
+
+  console.log(idt);
+  console.log(id);
+
+  async.parallel([
+    function (callback) {
+      let sql = `SELECT subtotal FROM detailtransaksi WHERE no_detail="${id}"`;
+      let query = conn.query(sql, (err, results1) => {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, results1);
+      });
+    }, function (callback) {
+      let sql = `DELETE FROM detailtransaksi WHERE no_detail="${id}"`;
+      let query = conn.query(sql, (err, results2) => {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, results2);
+      });
+    }, function (callback) {
+      let sql = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
+      let query = conn.query(sql, (err, results3) => {
+        if (err) {
+          return callback(err);
+        }
+        return callback(null, results3);
+      });
+    }
+  ], function (error, callbackResults) {
+    if (error) {
+      console.log(error);
+    } else {
+      response.send({
+        subtotalItem: callbackResults[0],
+        listItem: callbackResults[2]
+      })
+    }
+  });
+});
+
+app.post("/save-transaksi", function (request, response, next) {
+  var idp = request.body.id_transaksi;
+  var idk = request.body.id_karyawan;
+  var tp = request.body.tanggal_penjualan;
+  var total = request.body.total_transaksi;
+  var bayar = request.body.bayar;
+
+  console.log(idp);
+  console.log(idk);
+  console.log(tp);
+  console.log(total);
+  console.log(bayar);
+
+  var query = `INSERT INTO transaksi (no_transaksi, no_karyawan, tanggal_penjualan, total_transaksi, bayar) VALUES ("${idp}", "${idk}", "${tp}", "${total}", "${bayar}")`;
+  conn.query(query, function (error, data) {
+    console.log("Sukses Transaksi");
+  });
+});
+
+
+
+
+
+app.get('/API/jenis', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from jenis', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from jenis', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.get('/API/kategori', (req, res)=>{
+app.get('/API/kategori', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from kategori', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from kategori', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.get('/API/karyawan', (req, res)=>{
+app.get('/API/karyawan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from karyawan', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from karyawan', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.get('/API/produk', (req, res)=>{
+app.get('/API/produk', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from produk', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from produk', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.get('/API/penjualan', (req, res)=>{
+app.get('/API/penjualan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from penjualan', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from penjualan', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
