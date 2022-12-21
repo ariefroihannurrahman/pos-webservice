@@ -3,17 +3,20 @@ const app = express();
 const mysql = require('mysql');
 const cors = require('cors');
 // const session = require('express-session');
-// const async = require('async');
+const async = require('async');
 const { default: axios } = require('axios');
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-let corsOptions = {
-  origin: ['http://localhost:3000/'],
-}
+// let corsOptions = {
+//   origin: ['http://localhost:3000/'],
+// }
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+
+
+app.use(cors());
 
 var conn = mysql.createConnection({
   host: "localhost",
@@ -36,8 +39,10 @@ let date_time = new Date();
 let date1 = ("0" + date_time.getDate()).slice(-2);
 let month1 = ("0" + (date_time.getMonth() + 1)).slice(-2);
 let year1 = date_time.getFullYear();
+let menit = date_time.getMinutes();
 let tanggal = year1 + "-" + month1 + "-" + date1;
 let tanggal2 = year1 + month1 + date1;
+let tahun = year1.toString().substring(2);
 
 app.post('/auth', function (req, res) {
   let kode = req.body.kode;
