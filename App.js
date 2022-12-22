@@ -46,14 +46,18 @@ let tahun = year1.toString().substring(2);
 
 app.post('/auth', function (req, res) {
   let kode = req.body.kode;
-  console.log(kode);
   conn.query('SELECT * FROM karyawan WHERE kode = ?', [kode], function (error, results, fields) {
     if (results.length > 0) {
       let sessionid = tahun + "" + month1 + "" + date1 + "" + menit + "" + results[0].no_karyawan;
       res.send({
+        login: true,
         namakasir: results[0].nama_karyawan,
         idkasir: results[0].no_karyawan,
         sessionid: sessionid
+      })
+    } else {
+      res.send({
+        login: false
       })
     }
   });
@@ -66,20 +70,16 @@ app.post('/add-laporan-awal', (req, res) => {
     tanggal_laporan: tanggal,
     laporan_awal: req.body.laporan_awal
   };
-  console.log(req.body.id_session);
-  console.log(req.body.no_karyawan);
-  console.log(req.body.tanggal);
-  console.log(req.body.laporan_awal);
   let laporan_awal = req.body.laporan_awal;
   let sql = "INSERT INTO laporankasir SET ?";
-  let query = conn.query(sql, data, (err, results) => {
+  conn.query(sql, data, (err, results) => {
     res.json({ laporanawal: laporan_awal });
   });
 });
 
 app.post('/add-laporan-akhir', (req, res) => {
   let sql = "UPDATE laporankasir SET laporan_akhir ='" + req.body.laporan_akhir + "' WHERE no_laporan=" + req.body.id_session + ";"
-  let query = conn.query(sql, (err, results) => {
+  conn.query(sql, (err, results) => {
     if (err) throw err;
     res.json({ message: "sukses" });
   });
@@ -101,11 +101,6 @@ app.post("/save-item", function (request, response, next) {
   var kuantitas = request.body.kuantitas;
   var subtotal = request.body.subTotal;
 
-  console.log(idt);
-  console.log(idp);
-  console.log(kuantitas);
-  console.log(subtotal);
-
   var query = `INSERT INTO detailtransaksi (no_detail, no_transaksi, no_produk, kuantitas, subtotal) VALUES ("", "${idt}", "${idp}", "${kuantitas}", "${subtotal}")`;
   conn.query(query, function (error, data1) {
     response.send(data1);
@@ -115,7 +110,6 @@ app.post("/save-item", function (request, response, next) {
 
 app.post("/get-item-list", function (request, response, next) {
   var idt = request.body.id_transaksi;
-  console.log(idt);
   var query = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
   conn.query(query, function (error, data2) {
     response.send(data2);
@@ -128,15 +122,10 @@ app.post("/get-save-item", function (request, response, next) {
   var kuantitas = request.body.kuantitas;
   var subtotal = request.body.subTotal;
 
-  console.log(idt);
-  console.log(idp);
-  console.log(kuantitas);
-  console.log(subtotal);
-
   async.parallel([
     function (callback) {
       let sql = `INSERT INTO detailtransaksi (no_detail, no_transaksi, no_produk, kuantitas, subtotal) VALUES ("", "${idt}", "${idp}", "${kuantitas}", "${subtotal}")`;
-      let query = conn.query(sql, (err, results1) => {
+      conn.query(sql, (err, results1) => {
         if (err) {
           return callback(err);
         }
@@ -144,7 +133,7 @@ app.post("/get-save-item", function (request, response, next) {
       });
     }, function (callback) {
       let sql = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
-      let query = conn.query(sql, (err, results2) => {
+      conn.query(sql, (err, results2) => {
         if (err) {
           return callback(err);
         }
@@ -166,13 +155,10 @@ app.post("/get-delete-item", function (request, response, next) {
   var idt = request.body.id_transaksi;
   var id = request.body.no_detail;
 
-  console.log(idt);
-  console.log(id);
-
   async.parallel([
     function (callback) {
       let sql = `SELECT subtotal FROM detailtransaksi WHERE no_detail="${id}"`;
-      let query = conn.query(sql, (err, results1) => {
+      conn.query(sql, (err, results1) => {
         if (err) {
           return callback(err);
         }
@@ -180,7 +166,7 @@ app.post("/get-delete-item", function (request, response, next) {
       });
     }, function (callback) {
       let sql = `DELETE FROM detailtransaksi WHERE no_detail="${id}"`;
-      let query = conn.query(sql, (err, results2) => {
+      conn.query(sql, (err, results2) => {
         if (err) {
           return callback(err);
         }
@@ -188,7 +174,7 @@ app.post("/get-delete-item", function (request, response, next) {
       });
     }, function (callback) {
       let sql = `select detailtransaksi.no_detail, produk.nama_produk, produk.harga, detailtransaksi.kuantitas, detailtransaksi.subtotal from detailtransaksi INNER JOIN produk ON detailtransaksi.no_produk = produk.no_produk WHERE no_transaksi = "${idt}"`;
-      let query = conn.query(sql, (err, results3) => {
+      conn.query(sql, (err, results3) => {
         if (err) {
           return callback(err);
         }
@@ -213,12 +199,6 @@ app.post("/save-transaksi", function (request, response, next) {
   var tp = request.body.tanggal_penjualan;
   var total = request.body.total_transaksi;
   var bayar = request.body.bayar;
-
-  console.log(idp);
-  console.log(idk);
-  console.log(tp);
-  console.log(total);
-  console.log(bayar);
 
   var query = `INSERT INTO transaksi (no_transaksi, no_karyawan, tanggal_penjualan, total_transaksi, bayar) VALUES ("${idp}", "${idk}", "${tp}", "${total}", "${bayar}")`;
   conn.query(query, function (error, data) {
