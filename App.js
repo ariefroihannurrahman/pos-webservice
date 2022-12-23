@@ -116,6 +116,13 @@ app.post("/get-item-list", function (request, response, next) {
   });
 });
 
+app.get('/get-all-item', (req, res) => {
+  var query = 'SELECT produk.no_produk, produk.kd_produk, produk.nama_produk, jenis.nama_jenis, kategori.nama_kategori, produk.harga from produk INNER JOIN jenis ON produk.no_jenis = jenis.no_jenis INNER JOIN kategori ON produk.no_kategori = kategori.no_kategori;';
+  conn.query(query, function (err, data1) {
+    res.send(data1);
+  });
+});
+
 app.post("/get-save-item", function (request, response, next) {
   var idt = request.body.id_transaksi;
   var idp = request.body.id_produk;
