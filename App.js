@@ -6,7 +6,7 @@ const cors = require('cors');
 const async = require('async');
 const { default: axios } = require('axios');
 app.use(cors());
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
@@ -60,6 +60,7 @@ app.post('/auth', function (req, res) {
         login: true,
         namakasir: results[0].nama_karyawan,
         idkasir: results[0].no_karyawan,
+        jabatan : results[0].jabatan,
         sessionid: sessionid
       })
     } else {
@@ -222,10 +223,10 @@ app.post("/save-transaksi", function (request, response, next) {
 
 // ======================= GET DATA ==============================
 
-app.get('/API/jenis', (req, res)=>{
+app.get('/API/jenis', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from jenis ORDER BY nama_jenis ASC;', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from jenis ORDER BY nama_jenis ASC;', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
@@ -233,8 +234,8 @@ app.get('/API/jenis', (req, res)=>{
 
 app.get('/API/kategori', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from kategori ORDER BY nama_kategori ASC;', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from kategori ORDER BY nama_kategori ASC;', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
@@ -242,8 +243,8 @@ app.get('/API/kategori', (req, res) => {
 
 app.get('/API/karyawan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from karyawan ORDER BY nama_karyawan ASC;', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from karyawan ORDER BY nama_karyawan ASC;', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
@@ -251,8 +252,8 @@ app.get('/API/karyawan', (req, res) => {
 
 app.get('/API/produk', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from produk ORDER BY nama_produk ASC;', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from produk ORDER BY nama_produk ASC;', (error, result) => {
+    if (error) return console.log("Error Request Jenis From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
@@ -260,8 +261,8 @@ app.get('/API/produk', (req, res) => {
 
 app.get('/API/transaksi', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from transaksi ORDER BY tanggal_penjualan ASC;', (error, result)=>{
-    if(error) return console.log("Error Request Transaksi From Database");
+  conn.query('select * from transaksi ORDER BY tanggal_penjualan ASC;', (error, result) => {
+    if (error) return console.log("Error Request Transaksi From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
@@ -269,33 +270,33 @@ app.get('/API/transaksi', (req, res) => {
 
 // ================== EDIT MANAGER =======================
 
-app.post('/API/post/jenis', (req, res)=>{
+app.post('/API/post/jenis', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     nama_jenis,
     no_jenis,
   } = req.body;
-  conn.query(`UPDATE jenis SET nama_jenis = '${nama_jenis}' WHERE jenis.no_jenis = ${no_jenis}`, (error, result)=>{
-    if(error) return console.log(`Error Request Jenis From Database: ${error}`);
+  conn.query(`UPDATE jenis SET nama_jenis = '${nama_jenis}' WHERE jenis.no_jenis = ${no_jenis}`, (error, result) => {
+    if (error) return console.log(`Error Request Jenis From Database: ${error}`);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.post('/API/post/kategori', (req, res)=>{
+app.post('/API/post/kategori', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     nama_kategori,
     no_kategori,
   } = req.body;
-  conn.query(`UPDATE kategori SET nama_kategori = '${nama_kategori}' WHERE kategori.no_kategori = ${no_kategori}`, (error, result)=>{
-    if(error) return console.log(`Error Request Kategori From Database: ${error}`);
+  conn.query(`UPDATE kategori SET nama_kategori = '${nama_kategori}' WHERE kategori.no_kategori = ${no_kategori}`, (error, result) => {
+    if (error) return console.log(`Error Request Kategori From Database: ${error}`);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.post('/API/post/produk', (req, res)=>{
+app.post('/API/post/produk', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     no_produk,
@@ -305,14 +306,14 @@ app.post('/API/post/produk', (req, res)=>{
     no_kategori,
     harga,
   } = req.body;
-  conn.query(`UPDATE produk SET kd_produk = '${kd_produk}', nama_produk = '${nama_produk}', no_jenis = '${no_jenis}', no_kategori = '${no_kategori}', harga = '${harga}' WHERE no_produk = '${no_produk}'`, (error, result)=>{
-    if(error) return console.log(`Error Request Produk From Database: ${error}`);
+  conn.query(`UPDATE produk SET kd_produk = '${kd_produk}', nama_produk = '${nama_produk}', no_jenis = '${no_jenis}', no_kategori = '${no_kategori}', harga = '${harga}' WHERE no_produk = '${no_produk}'`, (error, result) => {
+    if (error) return console.log(`Error Request Produk From Database: ${error}`);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.post('/API/post/karyawan', (req, res)=>{
+app.post('/API/post/karyawan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     no_karyawan,
@@ -326,21 +327,21 @@ app.post('/API/post/karyawan', (req, res)=>{
     status,
     alamat,
   } = req.body;
-  conn.query(`UPDATE karyawan SET id_karyawan='${id_karyawan}',nama_karyawan='${nama_karyawan}',nomor_handphone='${nomor_handphone}',jenis_kelamin='${jenis_kelamin}',tanggal_rekrut='${tanggal_rekrut}',jabatan='${jabatan}',kode='${kode}', status='${status}',alamat='${alamat}' WHERE no_karyawan = '${no_karyawan}'`, (error, result)=>{
-    if(error) return console.log(`Error Request Karyawan From Database: ${error}`);
+  conn.query(`UPDATE karyawan SET id_karyawan='${id_karyawan}',nama_karyawan='${nama_karyawan}',nomor_handphone='${nomor_handphone}',jenis_kelamin='${jenis_kelamin}',tanggal_rekrut='${tanggal_rekrut}',jabatan='${jabatan}',kode='${kode}', status='${status}',alamat='${alamat}' WHERE no_karyawan = '${no_karyawan}'`, (error, result) => {
+    if (error) return console.log(`Error Request Karyawan From Database: ${error}`);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
 });
 
-app.post('/API/post/penjualan', (req, res)=>{
+app.post('/API/post/penjualan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     nama_penjualan,
     no_penjualan,
   } = req.body;
-  conn.query(`UPDATE penjualan SET nama_penjualan = '${nama_penjualan}' WHERE penjualan.no_penjualan = ${no_penjualan}`, (error, result)=>{
-    if(error) return console.log(`Error Request Penjualan From Database: ${error}`);
+  conn.query(`UPDATE penjualan SET nama_penjualan = '${nama_penjualan}' WHERE penjualan.no_penjualan = ${no_penjualan}`, (error, result) => {
+    if (error) return console.log(`Error Request Penjualan From Database: ${error}`);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
@@ -348,44 +349,44 @@ app.post('/API/post/penjualan', (req, res)=>{
 
 // ================== DELETE MANAGER =======================
 
-app.delete('/API/delete/jenis/:no_jenis', (req, res)=>{
+app.delete('/API/delete/jenis/:no_jenis', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  const {no_jenis} = req.params;
+  const { no_jenis } = req.params;
   console.log(no_jenis);
-  conn.query(`DELETE FROM jenis WHERE no_jenis = '${no_jenis}'`, (error, result)=>{
-    if(error) console.log(error);
+  conn.query(`DELETE FROM jenis WHERE no_jenis = '${no_jenis}'`, (error, result) => {
+    if (error) console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
 });
-app.delete('/API/delete/kategori/:no_kategori', (req, res)=>{
+app.delete('/API/delete/kategori/:no_kategori', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  const {no_kategori} = req.params;
+  const { no_kategori } = req.params;
   console.log(no_kategori);
-  conn.query(`DELETE FROM kategori WHERE no_kategori = '${no_kategori}'`, (error, result)=>{
-    if(error) console.log(error);
+  conn.query(`DELETE FROM kategori WHERE no_kategori = '${no_kategori}'`, (error, result) => {
+    if (error) console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
 });
 
-app.delete('/API/delete/karyawan/:no_karyawan', (req, res)=>{
+app.delete('/API/delete/karyawan/:no_karyawan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  const {no_karyawan} = req.params;
+  const { no_karyawan } = req.params;
   console.log(no_karyawan);
-  conn.query(`DELETE FROM karyawan WHERE no_karyawan = '${no_karyawan}'`, (error, result)=>{
-    if(error) console.log(error);
+  conn.query(`DELETE FROM karyawan WHERE no_karyawan = '${no_karyawan}'`, (error, result) => {
+    if (error) console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
 });
 
-app.delete('/API/delete/produk/:no_produk', (req, res)=>{
+app.delete('/API/delete/produk/:no_produk', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  const {no_produk} = req.params;
+  const { no_produk } = req.params;
   console.log(no_produk);
-  conn.query(`DELETE FROM produk WHERE no_produk = '${no_produk}'`, (error, result)=>{
-    if(error) console.log(error);
+  conn.query(`DELETE FROM produk WHERE no_produk = '${no_produk}'`, (error, result) => {
+    if (error) console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
@@ -393,27 +394,27 @@ app.delete('/API/delete/produk/:no_produk', (req, res)=>{
 
 
 // ================== TAMBAH MANAGER =======================
-app.post('/API/tambah/jenis', (req, res)=>{
+app.post('/API/tambah/jenis', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  const {nama_jenis} = req.body;
-  conn.query(`INSERT INTO jenis VALUES (NULL, '${nama_jenis}')`, (error, result)=>{
-    if(error) return console.log(error);
+  const { nama_jenis } = req.body;
+  conn.query(`INSERT INTO jenis VALUES (NULL, '${nama_jenis}')`, (error, result) => {
+    if (error) return console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
 });
 
-app.post('/API/tambah/kategori', (req, res)=>{
+app.post('/API/tambah/kategori', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  const {nama_kategori} = req.body;
-  conn.query(`INSERT INTO kategori VALUES (NULL, '${nama_kategori}')`, (error, result)=>{
-    if(error) return console.log(error);
+  const { nama_kategori } = req.body;
+  conn.query(`INSERT INTO kategori VALUES (NULL, '${nama_kategori}')`, (error, result) => {
+    if (error) return console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
 });
 
-app.post('/API/tambah/karyawan', (req, res)=>{
+app.post('/API/tambah/karyawan', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     id_karyawan,
@@ -426,14 +427,14 @@ app.post('/API/tambah/karyawan', (req, res)=>{
     status,
     alamat,
   } = req.body;
-  conn.query(`INSERT INTO karyawan VALUES (NULL, '${id_karyawan}', '${nama_karyawan}', '${nomor_handphone}', '${jenis_kelamin}', '${tanggal_rekrut}', '${jabatan}', '${kode}', '${status}' , '${alamat}')`, (error, result)=>{
-    if(error) return console.log(error);
+  conn.query(`INSERT INTO karyawan VALUES (NULL, '${id_karyawan}', '${nama_karyawan}', '${nomor_handphone}', '${jenis_kelamin}', '${tanggal_rekrut}', '${jabatan}', '${kode}', '${status}' , '${alamat}')`, (error, result) => {
+    if (error) return console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
 });
 
-app.post('/API/tambah/produk', (req, res)=>{
+app.post('/API/tambah/produk', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const {
     kd_produk,
@@ -442,8 +443,8 @@ app.post('/API/tambah/produk', (req, res)=>{
     no_kategori,
     harga,
   } = req.body;
-  conn.query(`INSERT INTO produk VALUES (NULL, '${kd_produk}', '${nama_produk}', '${no_jenis}', '${no_kategori}', '${harga}')`, (error, result)=>{
-    if(error) return console.log(error);
+  conn.query(`INSERT INTO produk VALUES (NULL, '${kd_produk}', '${nama_produk}', '${no_jenis}', '${no_kategori}', '${harga}')`, (error, result) => {
+    if (error) return console.log(error);
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   })
