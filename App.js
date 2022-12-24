@@ -23,7 +23,7 @@ app.options('*', cors());
 // app.use(cors(corsOptions));
 
 
-app.use(cors());
+// app.use(cors());
 
 var conn = mysql.createConnection({
   host: "localhost",
@@ -258,10 +258,10 @@ app.get('/API/produk', (req, res) => {
   });
 });
 
-app.get('/API/penjualan', (req, res) => {
+app.get('/API/transaksi', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
-  conn.query('select * from penjualan ORDER BY tanngal_penjualan ASC;', (error, result)=>{
-    if(error) return console.log("Error Request Jenis From Database");
+  conn.query('select * from transaksi ORDER BY tanggal_penjualan ASC;', (error, result)=>{
+    if(error) return console.log("Error Request Transaksi From Database");
     const response = JSON.parse(JSON.stringify(result));
     res.json(response);
   });
