@@ -217,7 +217,7 @@ app.post("/save-transaksi", function (request, response, next) {
 
   var query = `INSERT INTO transaksi (no_transaksi, no_karyawan, tanggal_penjualan, total_transaksi, bayar) VALUES ("${idp}", "${idk}", "${tp}", "${total}", "${bayar}")`;
   conn.query(query, function (error, data) {
-    console.log("Sukses Transaksi");
+    response.send(transaksi = true);
   });
 });
 
